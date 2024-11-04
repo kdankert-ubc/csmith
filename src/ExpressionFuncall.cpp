@@ -238,6 +238,11 @@ bool ExpressionFuncall::compatible(const Expression * /*exp*/) const
 	return false;
 }
 
+bool ExpressionFuncall::is_tainted() const {
+	// TODO if func tainted and at least one argument tainted
+	return false;
+}
+
 /*
  *
  */

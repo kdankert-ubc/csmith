@@ -116,6 +116,10 @@ ExpressionComma::get_eval_to_subexps(vector<const Expression*>& subs) const
 	subs.insert(subs.end(), exps.begin(), exps.end());
 }
 
+bool ExpressionComma::is_tainted() const {
+	return rhs.is_tainted();
+}
+
 void
 ExpressionComma::Output(std::ostream &out) const
 {

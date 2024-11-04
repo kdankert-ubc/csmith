@@ -84,6 +84,8 @@ public:
 	virtual std::vector<const ExpressionVariable*> get_dereferenced_ptrs(void) const;
 	virtual void get_referenced_ptrs(std::vector<const Variable*>& ptrs) const;
 
+	bool is_tainted() const override;
+
 	void Output(std::ostream &) const;
 	virtual void indented_output(std::ostream &out, int indent) const;
 

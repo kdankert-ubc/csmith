@@ -130,7 +130,8 @@ ExpressionVariable::make_random(CGContext &cg_context, const Type* type, const C
 ExpressionVariable::ExpressionVariable(const Variable &v)
 	: Expression(eVariable),
       var(v),
-      type(v.type)
+      type(v.type),
+      initiallyTainted(v.is_tainted())
 {
 }
 
@@ -140,7 +141,8 @@ ExpressionVariable::ExpressionVariable(const Variable &v)
 ExpressionVariable::ExpressionVariable(const Variable &v, const Type* t)
 	: Expression(eVariable),
 	  var(v),
-	  type(t)
+	  type(t),
+      initiallyTainted(v.is_tainted())
 {
 }
 
@@ -150,7 +152,8 @@ ExpressionVariable::ExpressionVariable(const Variable &v, const Type* t)
 ExpressionVariable::ExpressionVariable(const ExpressionVariable &expr)
 	: Expression(eVariable),
 	  var(expr.var),
-	  type(expr.type)
+	  type(expr.type),
+      initiallyTainted(expr.var.is_tainted())
 {
 	// Nothing to do
 }
@@ -199,6 +202,10 @@ ExpressionVariable::get_qualifiers(void) const
 	return var.qfer.indirect_qualifiers(indirect);
 }
 
+bool ExpressionVariable::is_tainted() const {
+	return var.is_tainted() || initiallyTainted;
+}
+
 /*
  *
  */
@@ -219,6 +226,7 @@ ExpressionVariable::Output(std::ostream &out) const
 		out << "&";
     }
 	var.Output(out);
+	out << (initiallyTainted ? "/* tainted */" : "/* not tainted */");
     if (indirect_level > 0) {
         out << ")";
     }

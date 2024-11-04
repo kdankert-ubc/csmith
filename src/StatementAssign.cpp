@@ -390,6 +390,13 @@ StatementAssign::StatementAssign(Block* b, const Lhs &l,
 	  op_flags(flags)
 {
 	// Nothing else to do.
+	if (e.is_tainted() || (!is_simple_assign() && lhs.is_tainted())) {
+		lhs.set_tainted(true);
+		wasInfluenced = true;
+	} else {
+		lhs.set_tainted(false);
+		wasInfluenced = false;
+	}
 }
 
 /*
@@ -411,6 +418,13 @@ StatementAssign::StatementAssign(Block* b, const Lhs &l,
 	  tmp_var1(tmp_name1),
 	  tmp_var2(tmp_name2)
 {
+	if (e.is_tainted() || (!is_simple_assign() && lhs.is_tainted())) {
+		lhs.set_tainted(true);
+		wasInfluenced = true;
+	} else {
+		lhs.set_tainted(false);
+		wasInfluenced = false;
+	}
 }
 
 #if 0
@@ -468,6 +482,10 @@ StatementAssign::output_op(std::ostream &out) const
 	}
 }
 
+bool StatementAssign::is_tainted() const {
+	return rhs->is_tainted() || (!is_simple_assign() && lhs.is_tainted());
+}
+
 /*
  *
  */
@@ -476,6 +494,7 @@ StatementAssign::Output(std::ostream &out, FactMgr* /*fm*/, int indent) const
 {
 	output_tab(out, indent);
 	OutputAsExpr(out);
+	out << (wasInfluenced ? "/* tainted ": "/* untainted ") << lhs.get_var()->name << " */";
 	out << ";";
 	outputln(out);
 }

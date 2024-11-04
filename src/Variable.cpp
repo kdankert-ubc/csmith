@@ -450,7 +450,7 @@ Variable::Variable(const std::string &name, const Type *type,
 				   const vector<bool>& isConsts, const vector<bool>& isVolatiles,
 				   bool isAuto, bool isStatic, bool isRegister, bool isBitfield, const Variable* isFieldVarOf)
 	: name(name), type(type),
-	  init(0),
+	  init(0), isTainted(false),
 	  isAuto(isAuto), isStatic(isStatic), isRegister(isRegister),
 	  isBitfield_(isBitfield), isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(isFieldVarOf), isArray(false),
@@ -464,7 +464,7 @@ Variable::Variable(const std::string &name, const Type *type,
  */
 Variable::Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer)
 	: name(name), type(type),
-	  init(init),
+	  init(init), isTainted(init && init->is_tainted()),
 	  isAuto(false), isStatic(false), isRegister(false), isBitfield_(false),
 	  isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(0), isArray(false),
@@ -475,7 +475,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression* 
 
 Variable::Variable(const std::string &name, const Type *type, const Expression* init, const CVQualifiers* qfer, const Variable* isFieldVarOf, bool isArray)
 	: name(name), type(type),
-	  init(init),
+	  init(init), isTainted(init && init->is_tainted()),
 	  isAuto(false), isStatic(false), isRegister(false), isBitfield_(false),
 	  isAddrTaken(false), isAccessOnce(false),
 	  field_var_of(isFieldVarOf),
@@ -712,6 +712,7 @@ void
 Variable::OutputDef(std::ostream &out, int indent) const
 {
 	output_tab(out, indent);
+	out << (is_tainted() ? "/* tainted */ " : "/* not tainted */ ");
 	// force global variables to be static if necessary
 	if (is_global() && (CGOptions::force_globals_static() || rnd_flipcoin(pStaticKeywordProb))) {
 		out << "static ";

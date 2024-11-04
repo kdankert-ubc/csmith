@@ -220,6 +220,14 @@ Lhs::get_qualifiers(void) const
 	return qfer;
 }
 
+bool Lhs::is_tainted() const {
+	return var.is_tainted();
+}
+
+void Lhs::set_tainted(bool tainted) const {
+	var.isTainted = tainted;
+}
+
 /*
  *
  */

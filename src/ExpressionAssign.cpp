@@ -130,6 +130,10 @@ ExpressionAssign::visit_facts(vector<const Fact*>& inputs, CGContext& cg_context
 	return assign->visit_facts(inputs, cg_context);
 }
 
+bool ExpressionAssign::is_tainted() const {
+	return assign->is_tainted();
+}
+
 void
 ExpressionAssign::Output(std::ostream &out) const
 {

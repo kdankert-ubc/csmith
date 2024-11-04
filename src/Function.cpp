@@ -496,6 +496,7 @@ Function::make_first(void)
 	FMList.push_back(fm);
 
 	GenerateParameterList(*f);
+	f->param[0]->isTainted = true;
 	f->is_static = false;
 
 	// ExtensionMgr::GenerateFirstParameterList(*f);

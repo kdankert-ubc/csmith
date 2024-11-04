@@ -133,6 +133,8 @@ public:
 
 	virtual bool use_var(const Variable* /* v */) const { return false;}
 
+	virtual bool is_tainted() const = 0;
+
 	virtual void Output(std::ostream &) const = 0;
 	virtual void indented_output(std::ostream &out, int indent) const;
 

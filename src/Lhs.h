@@ -83,6 +83,10 @@ public:
 
 	virtual const Type &get_type(void) const;
 
+	bool is_tainted() const override;
+
+	void set_tainted(bool tainted) const;
+
 	virtual void Output(std::ostream &) const;
 
 private:

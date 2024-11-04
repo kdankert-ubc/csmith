@@ -80,6 +80,10 @@ public:
 
 	virtual bool use_var(const Variable* v) const { return v == &var;}
 
+	bool is_tainted() const override;
+
+	bool initiallyTainted = false;
+
 	virtual void Output(std::ostream &) const;
 
 private:

@@ -70,6 +70,9 @@ public:
 
 	const Expression* get_lhs(void) const { return &lhs;}
 	const Expression* get_rhs(void) const { return &rhs;}
+
+	bool is_tainted() const override;
+
 	void Output(std::ostream &) const;
 	virtual void indented_output(std::ostream &out, int indent) const;
 

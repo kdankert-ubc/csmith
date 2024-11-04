@@ -153,6 +153,10 @@ StatementIf::Output(std::ostream &out, FactMgr* fm, int indent) const
 void
 StatementIf::output_condition(std::ostream &out, FactMgr* /*fm*/, int indent) const
 {
+	if (test.is_tainted()) {
+		output_tab(out, indent);
+		out << "/* tainted !!! */" << endl;
+	}
 	output_tab(out, indent);
 	out << "if (";
 	test.Output(out);

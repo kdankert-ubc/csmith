@@ -119,6 +119,8 @@ public:
 	virtual std::vector<const ExpressionVariable*> get_dereferenced_ptrs(void) const;
 	virtual bool has_uncertain_call_recursive(void) const;
 
+	bool is_tainted() const override;
+
 	virtual void Output(std::ostream &out, FactMgr* fm, int indent = 0) const;
 	void output_op(std::ostream &out) const;
 
@@ -127,6 +129,8 @@ public:
 	virtual void OutputAsExpr(std::ostream &out) const;
 
 	void OutputSimple(std::ostream &out) const;
+
+	bool wasInfluenced;
 
 private:
 	static eAssignOps AssignOpsProbability(const Type* type);

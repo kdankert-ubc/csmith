@@ -565,6 +565,10 @@ Constant::get_type(void) const
 	return *(type);
 }
 
+bool Constant::is_tainted() const {
+	return false;
+}
+
 /*
  *
  */

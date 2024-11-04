@@ -546,6 +546,7 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 	string name = RandomGlobalName();
 	tmp_count++;
 	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
+	var->isTainted = true;
 
 	GlobalList.push_back(var);
 	// for DFA
@@ -577,6 +578,7 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
 	const Expression *init = make_init_value(access, cg_context, t, qfer, NULL);
 	ERROR_GUARD(NULL);
 	Variable *var = new_variable(name, t, init, qfer);
+	var->isTainted = true;
 
 	GlobalList.push_back(var);
 	// for DFA

@@ -86,6 +86,7 @@ public:
 	bool is_const(void) const;
 	bool is_volatile(void) const;
 	bool is_access_once(void) const { return isAccessOnce; }
+	bool is_tainted(void) const { return isTainted; }
 	bool is_const_after_deref(int deref_level) const;
 	bool is_partial_volatile_after_deref(int deref_level) const;
 	bool is_volatile_after_deref(int deref_level) const;
@@ -154,6 +155,7 @@ public:
 	const bool isBitfield_; // expanded from a full-bitfield struct var
 	bool isAddrTaken;
 	bool isAccessOnce;
+	mutable bool isTainted;
 	const Variable* field_var_of; //expanded from a struct/union
 	const bool isArray;
 	const CVQualifiers qfer;
