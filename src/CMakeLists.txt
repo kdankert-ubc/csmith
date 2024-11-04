@@ -40,11 +40,13 @@ set(BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
 #
 configure_file("git_version.cpp.in" "git_version.cpp" @ONLY)
 
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR}) # needed for gen'ed .cpp files
+include_directories(${csmith_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${csmith_SOURCE_DIR}) # needed for gen'ed .cpp files
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(csmith_SOURCES
-  ${CMAKE_BINARY_DIR}/config.h
+  ${csmith_BINARY_DIR}/config.h
   AbsExtension.cpp
   AbsExtension.h
   AbsProgramGenerator.cpp
@@ -192,10 +194,10 @@ set(csmith_SOURCES
   random.h
   util.cpp
   util.h
-  ${PROJECT_BINARY_DIR}/git_version.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp
   )
 if(NOT HAVE_LRAND48)
-  include_directories(${PROJECT_SOURCE_DIR}/rand48)
+  include_directories(${csmith_SOURCE_DIR}/rand48)
   list(APPEND csmith_SOURCES
     rand48/_rand48.c
     rand48/lrand48.c

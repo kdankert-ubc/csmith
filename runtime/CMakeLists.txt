@@ -42,12 +42,12 @@ set(LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib")
 
 ###############################################################################
 
-include_directories(${CMAKE_BINARY_DIR})
+include_directories(${csmith_BINARY_DIR})
 
 # Build and install the static library.
 
 add_library(libcsmith_a STATIC
-  ${CMAKE_BINARY_DIR}/config.h
+  ${csmith_BINARY_DIR}/config.h
   volatile_runtime.c
   volatile_runtime.h
   )
@@ -62,7 +62,7 @@ install(TARGETS libcsmith_a
 # Build and install the shared library.
 
 add_library(libcsmith_so SHARED
-  ${CMAKE_BINARY_DIR}/config.h
+  ${csmith_BINARY_DIR}/config.h
   volatile_runtime.c
   volatile_runtime.h
   )
@@ -94,8 +94,8 @@ foreach(hdr IN LISTS generated_headers)
   string(REGEX REPLACE "[.]h$" ".m4" hdr_src ${hdr})
   add_custom_command(
     OUTPUT ${hdr}
-    COMMAND ${M4} < ${PROJECT_SOURCE_DIR}/${hdr_src} > ${hdr}
-    DEPENDS ${PROJECT_SOURCE_DIR}/${hdr_src}
+    COMMAND ${M4} < ${CMAKE_CURRENT_SOURCE_DIR}/${hdr_src} > ${hdr}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${hdr_src}
     VERBATIM
     )
 endforeach(hdr)
@@ -125,7 +125,7 @@ install(FILES
   )
 foreach(hdr IN LISTS generated_headers)
   install(FILES
-    "${PROJECT_BINARY_DIR}/${hdr}"
+    "${csmith_BINARY_DIR}/${hdr}"
     DESTINATION "${INCLUDE_DIR}"
     )
 endforeach(hdr)

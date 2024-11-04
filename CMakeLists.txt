@@ -31,7 +31,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(CheckIncludeFile)
 include(CheckSymbolExists)
@@ -113,8 +113,10 @@ set(csmith_PACKAGE_TARNAME		"csmith")
 set(csmith_PACKAGE_URL			"http://embed.cs.utah.edu/csmith/")
 set(csmith_PACKAGE_VERSION		"2.4.0")
 set(csmith_VERSION			"2.4.0")
+set(csmith_BINARY_DIR			"${CMAKE_CURRENT_BINARY_DIR}")
+set(csmith_SOURCE_DIR			"${CMAKE_CURRENT_SOURCE_DIR}")
 
-configure_file("cmake_config.h.in" "${PROJECT_BINARY_DIR}/config.h")
+configure_file("cmake_config.h.in" "${csmith_BINARY_DIR}/config.h")
 add_definitions("-DHAVE_CONFIG_H")
 
 ###############################################################################
