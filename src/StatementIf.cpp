@@ -99,6 +99,7 @@ StatementIf::make_random(CGContext &cg_context)
 	ERROR_GUARD_AND_DEL2(NULL, expr, if_true);
 
 	StatementIf* si = new StatementIf(cg_context.get_current_block(), *expr, *if_true, *if_false);
+	si->isInitiallyTainted = expr->is_tainted();
 	// compute accumulated effect for this statement
 	si->set_accumulated_effect_after_block(eff, if_true, cg_context);
 	si->set_accumulated_effect_after_block(eff, if_false, cg_context);
@@ -140,6 +141,10 @@ StatementIf::~StatementIf(void)
 	delete &if_false;
 }
 
+bool StatementIf::is_tainted() const {
+	return isInitiallyTainted || test.is_tainted();
+}
+
 /*
  *
  */
@@ -153,7 +158,7 @@ StatementIf::Output(std::ostream &out, FactMgr* fm, int indent) const
 void
 StatementIf::output_condition(std::ostream &out, FactMgr* /*fm*/, int indent) const
 {
-	if (test.is_tainted()) {
+	if (is_tainted()) {
 		output_tab(out, indent);
 		out << "/* tainted !!! */" << endl;
 	}

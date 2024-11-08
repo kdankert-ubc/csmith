@@ -290,6 +290,7 @@ StatementFor::make_random(CGContext &cg_context)
 	ERROR_GUARD_AND_DEL3(NULL, init, test, incr);
 
 	StatementFor* sf = new StatementFor(cg_context.get_current_block(), *init, *test, *incr, *body);
+	sf->isInitiallyTainted = init->is_tainted() || test->is_tainted() || body->is_tainted();
 	sf->post_loop_analysis(cg_context, pre_facts, pre_effects);
 	return sf;
 }
@@ -394,13 +395,17 @@ StatementFor::~StatementFor(void)
 	delete &body;
 }
 
+bool StatementFor::is_tainted() const {
+	return isInitiallyTainted || init.is_tainted() || test.is_tainted() || incr.is_tainted();
+}
+
 void
 StatementFor::output_header(std::ostream& out, int indent) const
 {
 	bool a = init.is_tainted(), b = test.is_tainted(), c = incr.is_tainted();
-	if (a || b || c) {
+	if (is_tainted()) {
 		output_tab(out, indent);
-		out << "/* tainted (" << a << "," << b << "," << c << ")*/" << endl;
+		out << "/* tainted (" << a << "," << b << "," << c << ") */" << endl;
 	}
 	output_tab(out, indent);
 	out << "for (";

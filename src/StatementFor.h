@@ -75,6 +75,8 @@ public:
 
 	virtual bool visit_facts(vector<const Fact*>& inputs, CGContext& cg_context) const;
 
+	bool is_tainted() const override;
+
 	virtual void Output(std::ostream &out, FactMgr* fm, int indent = 0) const;
 
 private:

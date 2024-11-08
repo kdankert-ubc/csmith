@@ -175,7 +175,8 @@ public:
 	void get_referenced_ptrs(std::vector<const Variable*>& ptrs) const;
 	bool is_ptr_used(void) const;
 
-	virtual bool is_tainted(void) const { return false; }
+	bool isInitiallyTainted = false;
+	virtual bool is_tainted(void) const { return isInitiallyTainted; }
 
 	virtual void Output(std::ostream &out, FactMgr* fm=0, int indent = 0) const = 0;
 	int pre_output(std::ostream &out, FactMgr* fm=0, int indent = 0) const;
