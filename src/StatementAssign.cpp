@@ -112,7 +112,7 @@ StatementAssign::AssignOpsProbability(const Type* type)
  *
  */
 StatementAssign *
-StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qf)
+StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qf, bool no_taint)
 {
 	// decide assignment operator
 	eAssignOps op = AssignOpsProbability(type);
@@ -145,7 +145,7 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 		if (type->is_volatile_struct_union())
 			return NULL;
 
-		e = Expression::make_random(rhs_cg_context, type, qf);
+		e = Expression::make_random(rhs_cg_context, type, qf, no_taint);
 		ERROR_GUARD_AND_DEL1(NULL, e);
 		if (!qf) {
 			qfer = e->get_qualifiers();
@@ -166,7 +166,7 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 			qfer.set_volatile(false);
 	}
 	else {
-		e = Expression::make_random(rhs_cg_context, type, qf);
+		e = Expression::make_random(rhs_cg_context, type, qf, no_taint);
 		ERROR_GUARD_AND_DEL1(NULL, e);
 		if (!qf) {
 			qfer = e->get_qualifiers();

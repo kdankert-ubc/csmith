@@ -94,9 +94,10 @@ class Expression
 {
 public:
 	// Factory method.
-	static Expression *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0, bool no_func = false, bool no_const = false, enum eTermType tt=MAX_TERM_TYPES);
+	static Expression *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0, bool no_func = false, bool no_const = false, bool
+	                               no_taint = false, enum eTermType tt=MAX_TERM_TYPES);
 
-	static Expression *make_random_param(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, enum eTermType tt=MAX_TERM_TYPES);
+	static Expression *make_random_param(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint = false, enum eTermType tt=MAX_TERM_TYPES);
 
 	static void InitProbabilityTables();
 

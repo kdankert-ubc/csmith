@@ -35,7 +35,7 @@
 enum FilterKind {
 	fDefault,
 	fDFS,
-	MAX_FILTER_KIND_SIZE
+	MAX_FILTER_KIND_SIZE,
 };
 
 // Filter base class

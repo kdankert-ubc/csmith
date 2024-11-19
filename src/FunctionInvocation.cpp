@@ -234,7 +234,7 @@ FunctionInvocation::make_random_binary(CGContext &cg_context, const Type* type)
 			if (!not_constant) {
 				rhs = Constant::make_random_upto(lhs_type->SizeInBytes() * 8);
 			} else {
-				rhs = Expression::make_random(rhs_cg_context, rhs_type, NULL, false, true, tt);
+				rhs = Expression::make_random(rhs_cg_context, rhs_type, NULL, false, true, false, tt);
 			}
 		}
 		else {
@@ -315,7 +315,7 @@ FunctionInvocation::make_random_binary_ptr_comparison(CGContext &cg_context)
 		// need to pass in NO_DANGLING_PTR flag
 		unsigned int old_flag = cg_context.flags;
 		cg_context.flags |= NO_DANGLING_PTR;
-		rhs = Expression::make_random(cg_context, type, 0, true, false, tt);
+		rhs = Expression::make_random(cg_context, type, 0, true, false, false, tt);
 		cg_context.flags = old_flag;
 	} else {
 		// Otherwise, the RHS must be generated under the combined effect
@@ -326,7 +326,7 @@ FunctionInvocation::make_random_binary_ptr_comparison(CGContext &cg_context)
 
 		CGContext rhs_cg_context(cg_context, rhs_eff_context, &rhs_eff_accum);
 		rhs_cg_context.flags |= NO_DANGLING_PTR;
-		rhs = Expression::make_random(rhs_cg_context, type, 0, true, false, tt);
+		rhs = Expression::make_random(rhs_cg_context, type, 0, true, false, false, tt);
 		cg_context.merge_param_context(rhs_cg_context, true);
 	}
 	ERROR_GUARD_AND_DEL2(NULL, fi, lhs);

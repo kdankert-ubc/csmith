@@ -66,24 +66,26 @@ public:
 	static Variable *make_dummy_static_variable(const string &name);
 
 	static Variable* select(Effect::Access access, const CGContext &cg_context,
-             const Type* type, const CVQualifiers* qfer,
-			 const vector<const Variable*>& invalid_vars, eMatchType mt,
-			 eVariableScope scope=MAX_VAR_SCOPE);
+	                        const Type* type, const CVQualifiers* qfer,
+	                        const vector<const Variable*>& invalid_vars, eMatchType mt,
+	                        bool no_taint = false, eVariableScope scope=MAX_VAR_SCOPE);
 	static Variable* choose_ok_var(const vector<Variable *> &vars);
 	static const Variable* choose_ok_var(const vector<const Variable *> &vars);
 	static const Variable* choose_visible_read_var(const Block* b, vector<const Variable*> written_vars, const Type* type, const vector<const Fact*>& facts);
 	static Variable* choose_var(vector<Variable *> vars, Effect::Access access,
-		   const CGContext &cg_context, const Type* type, const CVQualifiers* qfer,
-		   eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_bitfield = false, bool no_expand_struct = false);
+	                            const CGContext &cg_context, const Type* type, const CVQualifiers* qfer,
+	                            eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_bitfield = false, bool no_expand_struct = false, bool
+	                            no_taint = false);
 	static Variable *select_deref_pointer(Effect::Access access, const CGContext &cg_context, const Type* type,
 		   const CVQualifiers* qfer, const vector<const Variable*>& invalid_vars);
-	static Variable *SelectLoopCtrlVar(const CGContext &cg_context, const vector<const Variable*>& invalid_vars);
+	static Variable *SelectLoopCtrlVar(const CGContext &cg_context, const vector<const Variable*>& invalid_vars, bool no_taint = false);
 	static Block* expand_block_for_goto(Block* b, const CGContext& cg_context);
 	static Block* lower_block_for_vars(const vector<Block*>& blks, vector<const Variable*>& vars);
 
-	static Expression* make_init_value(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, Block* b);
+	static Expression* make_init_value(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, Block* b, bool no_taint =
+			                                   false);
 	static ArrayVariable* create_mutated_array_var(const ArrayVariable* av, const vector<const Expression*>& new_indices);
-	static const Variable* select_must_use_var(Effect::Access access, CGContext &cg_context, const Type* type, const CVQualifiers* qfer);
+	static const Variable* select_must_use_var(Effect::Access access, CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint = false);
 
 	static ArrayVariable* select_array(const CGContext &cg_context);
 	static ArrayVariable*  itemize_array(CGContext &cg_context, const ArrayVariable* av);
@@ -111,29 +113,30 @@ private:
 	static ArrayVariable* create_random_array(const CGContext& cg_context);
 
 	static Variable* eager_create_global_struct(Effect::Access access, const CGContext &cg_context,
-					const Type* type, const CVQualifiers* qfer,
-					eMatchType mt, const vector<const Variable*>& invalid_vars);
+	                                            const Type* type, const CVQualifiers* qfer,
+	                                            eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_taint = false);
 
 	static Variable* eager_create_local_struct(Block &block, Effect::Access access, const CGContext &cg_context,
-					const Type* type, const CVQualifiers* qfer,
-					eMatchType mt, const vector<const Variable*>& invalid_vars);
+	                                           const Type* type, const CVQualifiers* qfer,
+	                                           eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_taint = false);
 
 	static Variable* SelectGlobal(Effect::Access access, const CGContext &cg_context, const Type* type,
-			const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*>& invalid_vars);
+	                              const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_taint = false);
 
 	static Variable* SelectParentLocal(Effect::Access access, const CGContext &cg_context, const Type* type,
-			const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*> &invalid_vars);
+	                                   const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*> &invalid_vars, bool no_taint = false);
 
 	static Variable* SelectParentParam(Effect::Access access, const CGContext &cg_context, const Type* type,
-			const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*> &invalid_vars);
+	                                   const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*> &invalid_vars, bool no_taint = false);
 
-	static Variable* GenerateNewVariable(Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer);
+	static Variable* GenerateNewVariable(Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint = false);
 
-	static Variable* GenerateNewGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer);
+	static Variable* GenerateNewGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, bool no_taint = false);
 
-	static Variable* GenerateNewNonArrayGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer);
+	static Variable* GenerateNewNonArrayGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, bool no_taint = false);
 
-	static Variable* GenerateNewParentLocal(Block &block, Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer);
+	static Variable* GenerateNewParentLocal(Block &block, Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool
+	                                        no_taint = false);
 
 	static void get_all_array_vars(vector<const Variable*> &array_vars);
 
@@ -150,7 +153,7 @@ private:
 	static bool is_eligible_var(const Variable* var, int deref_level, Effect::Access access, const CGContext& cg_context);
 
 	static Variable * create_and_initialize(Effect::Access access, const CGContext &cg_context, const Type* t,
-					const CVQualifiers* qfer, Block *blk, std::string name);
+	                                        const CVQualifiers* qfer, Block *blk, std::string name, bool no_taint = false);
 
 	// all variables generated
 	static vector<Variable*> AllVars;

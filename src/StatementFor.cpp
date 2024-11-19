@@ -172,7 +172,7 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
 	vector<const Variable*> invalid_vars;
 	Variable *var = NULL;
 	do {
-		var = VariableSelector::SelectLoopCtrlVar(cg_context, invalid_vars);
+		var = VariableSelector::SelectLoopCtrlVar(cg_context, invalid_vars, true);
 		ERROR_GUARD(NULL);
 		if (var->is_volatile()) {
 			invalid_vars.push_back(var);

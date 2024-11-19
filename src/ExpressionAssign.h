@@ -46,7 +46,7 @@ class ExpressionAssign : public Expression
 {
 public:
 	// Factory method.
-	static Expression *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0);
+	static Expression *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0, bool no_taint = false);
 
 	ExpressionAssign(const StatementAssign* sa);
 	virtual ~ExpressionAssign(void);

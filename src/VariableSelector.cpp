@@ -419,7 +419,8 @@ VariableSelector::choose_var(vector<Variable *> vars,
 		   eMatchType mt,
 		   const vector<const Variable*>& invalid_vars,
 		   bool no_bitfield,
-		   bool no_expand_struct_union)
+		   bool no_expand_struct_union,
+		   bool no_taint)
 {
 	vector<Variable *> ok_vars;
 	vector<Variable *>::iterator i;
@@ -448,6 +449,11 @@ VariableSelector::choose_var(vector<Variable *> vars,
 		if (is_variable_in_set(invalid_vars, *i)) {
 			continue;
 		}
+
+		if (no_taint && (*i)->is_tainted()) {
+			continue;;
+		}
+
 		int deref_level = (*i)->type->get_indirect_level() - type->get_indirect_level();
 		if (is_eligible_var((*i), deref_level, access, cg_context)) {
 			// Otherwise, this is an acceptable choice.
@@ -507,7 +513,7 @@ VariableSelector::choose_var(vector<Variable *> vars,
 
 Variable *
 VariableSelector::create_and_initialize(Effect::Access access, const CGContext &cg_context, const Type* t,
-					const CVQualifiers* qfer, Block *blk, std::string name)
+					const CVQualifiers* qfer, Block *blk, std::string name, bool no_taint)
 {
 	const Expression* init = NULL;
 	Variable* var = NULL;
@@ -516,12 +522,12 @@ VariableSelector::create_and_initialize(Effect::Access access, const CGContext &
 		if (CGOptions::strict_const_arrays()) {
 			init = Constant::make_random(t);
 		} else {
-			init = make_init_value(access, cg_context, t, qfer, blk);
+			init = make_init_value(access, cg_context, t, qfer, blk, no_taint);
 		}
 		var = create_array_and_itemize(blk, name, cg_context, t, init, qfer);
 	}
 	else {
-		init = make_init_value(access, cg_context, t, qfer, blk);
+		init = make_init_value(access, cg_context, t, qfer, blk, no_taint);
 		var = new_variable(name, t, init, qfer);
 	}
 	assert(var);
@@ -536,7 +542,7 @@ static int tmp_count = 0;
  * any struct type --- To generate the specific struct typed variable
  */
 Variable *
-VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer)
+VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, bool no_taint)
 {
 	ERROR_GUARD(NULL);
 	CVQualifiers var_qfer = (!qfer || qfer->wildcard)
@@ -545,7 +551,7 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 	ERROR_GUARD(NULL);
 	string name = RandomGlobalName();
 	tmp_count++;
-	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
+	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name, no_taint);
 	var->isTainted = true;
 
 	GlobalList.push_back(var);
@@ -565,7 +571,7 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
 }
 
 Variable *
-VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer)
+VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qfer, bool no_taint)
 {
 	ERROR_GUARD(NULL);
 	CVQualifiers var_qfer = (!qfer || qfer->wildcard)
@@ -596,7 +602,7 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
 Variable*
 VariableSelector::eager_create_global_struct(Effect::Access access, const CGContext &cg_context,
 					const Type* type, const CVQualifiers* qfer,
-					eMatchType mt, const vector<const Variable*>& invalid_vars)
+					eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_taint)
 {
 	// We will choose a struct with all of its qualifiers.
 	// choose_var() will rule out invalid field vars.
@@ -605,29 +611,29 @@ VariableSelector::eager_create_global_struct(Effect::Access access, const CGCont
 	const Type *t = 0;
 	if (level == 0) {
 		t = Type::choose_random_struct_from_type(type, false);
-		GenerateNewGlobal(access, cg_context, t, qfer);
+		GenerateNewGlobal(access, cg_context, t, qfer, no_taint);
 	}
 	else if (level == 1) {
 		t = Type::choose_random_struct_from_type(t->ptr_type, false);
 		if (qfer) {
 			CVQualifiers qfer1 = qfer->indirect_qualifiers(level);
-			GenerateNewGlobal(access, cg_context, t, &qfer1);
+			GenerateNewGlobal(access, cg_context, t, &qfer1, no_taint);
 		}
 		else {
-			GenerateNewGlobal(access, cg_context, t, qfer);
+			GenerateNewGlobal(access, cg_context, t, qfer, no_taint);
 		}
 	}
 	else
 		return NULL;
 
 	ERROR_GUARD(NULL);
-	return choose_var(GlobalList, access, cg_context, type, qfer, mt, invalid_vars);
+	return choose_var(GlobalList, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 }
 
 Variable*
 VariableSelector::eager_create_local_struct(Block &block, Effect::Access access, const CGContext &cg_context,
 					const Type* type, const CVQualifiers* qfer,
-					eMatchType mt, const vector<const Variable*>& invalid_vars)
+					eMatchType mt, const vector<const Variable*>& invalid_vars, bool no_taint)
 {
 	// We will choose a struct with all of its qualifiers.
 	// choose_var() will rule out invalid field vars.
@@ -636,16 +642,16 @@ VariableSelector::eager_create_local_struct(Block &block, Effect::Access access,
 	const Type *t = 0;
 	if (level == 0) {
 		t = Type::choose_random_struct_from_type(type, true);
-		GenerateNewParentLocal(block, access, cg_context, t, qfer);
+		GenerateNewParentLocal(block, access, cg_context, t, qfer, no_taint);
 	}
 	else if (level == 1) {
 		t = Type::choose_random_struct_from_type(t->ptr_type, true);
 		if (qfer) {
 			CVQualifiers qfer1 = qfer->indirect_qualifiers(level);
-			GenerateNewParentLocal(block, access, cg_context, t, &qfer1);
+			GenerateNewParentLocal(block, access, cg_context, t, &qfer1, no_taint);
 		}
 		else {
-			GenerateNewParentLocal(block, access, cg_context, t, qfer);
+			GenerateNewParentLocal(block, access, cg_context, t, qfer, no_taint);
 		}
 	}
 	else
@@ -655,20 +661,21 @@ VariableSelector::eager_create_local_struct(Block &block, Effect::Access access,
 		return NULL;
 
 	ERROR_GUARD(NULL);
-	return choose_var(block.local_vars, access, cg_context, type, qfer, mt, invalid_vars);
+	return choose_var(block.local_vars, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 }
 
 
 // --------------------------------------------------------------
 // Select a random global variable.
 Variable *
-VariableSelector::SelectGlobal(Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*>& invalid_vars)
+VariableSelector::SelectGlobal(Effect::Access access, const CGContext &cg_context, const Type* type, const CVQualifiers* qfer, eMatchType mt, const vector<const Variable*>& invalid_vars, bool
+                               no_taint)
 {
-	Variable* var = choose_var(GlobalList, access, cg_context, type, qfer, mt, invalid_vars);
+	Variable* var = choose_var(GlobalList, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 	ERROR_GUARD(NULL);
 	if (var == 0) {
 		if (CGOptions::expand_struct()) {
-			var = VariableSelector::eager_create_global_struct(access, cg_context, type, qfer, mt, invalid_vars);
+			var = VariableSelector::eager_create_global_struct(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 			ERROR_GUARD(NULL);
 			if (var)
 				return var;
@@ -681,7 +688,7 @@ VariableSelector::SelectGlobal(Effect::Access access, const CGContext &cg_contex
 		}
 		const Type* t = Type::random_type_from_type(type, no_volatile);
 		ERROR_GUARD(NULL);
-		return GenerateNewGlobal(access, cg_context, t, qfer);
+		return GenerateNewGlobal(access, cg_context, t, qfer, no_taint);
 	}
 	return var;
 }
@@ -825,7 +832,7 @@ VariableSelector::lower_block_for_vars(const vector<Block*>& blks, vector<const 
  *    might call this function again)
  *************************************************************************************/
 Expression*
-VariableSelector::make_init_value(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qf, Block* b)
+VariableSelector::make_init_value(Effect::Access access, const CGContext &cg_context, const Type* t, const CVQualifiers* qf, Block* b, bool no_taint)
 {
 	assert(qf && qf->sanity_check(t));
 	CVQualifiers qfer(*qf);
@@ -850,12 +857,12 @@ VariableSelector::make_init_value(Effect::Access access, const CGContext &cg_con
 	// b == NULL means we are generating init for globals
 	if (!b && CGOptions::ccomp()) {
 		get_all_array_vars(dummy);
-		var = choose_var(vars, access, cg_context, type, &qfer, eExact, dummy, true, true);
+		var = choose_var(vars, access, cg_context, type, &qfer, eExact, dummy, true, true, no_taint);
 	}
 	else {
 		if (!CGOptions::addr_taken_of_locals())
 			get_all_local_vars(b, dummy);
-		var = choose_var(vars, access, cg_context, type, &qfer, eExact, dummy, true);
+		var = choose_var(vars, access, cg_context, type, &qfer, eExact, dummy, true, no_taint);
 	}
 	ERROR_GUARD(NULL);
 
@@ -880,10 +887,10 @@ VariableSelector::make_init_value(Effect::Access access, const CGContext &cg_con
 		}
 		else {
 			if (CGOptions::ccomp()) {
-				var = GenerateNewNonArrayGlobal(Effect::READ, cg_context, tt, &qfer_deref);
+				var = GenerateNewNonArrayGlobal(Effect::READ, cg_context, tt, &qfer_deref, no_taint);
 			}
 			else {
-				var = GenerateNewGlobal(Effect::READ, cg_context, tt, &qfer_deref);
+				var = GenerateNewGlobal(Effect::READ, cg_context, tt, &qfer_deref, no_taint);
 			}
 			ERROR_GUARD(NULL);
 		}
@@ -905,13 +912,14 @@ VariableSelector::GenerateNewParentLocal(Block &block,
 					   Effect::Access access,
 					   const CGContext &cg_context,
                        const Type* t,
-					   const CVQualifiers* qfer)
+					   const CVQualifiers* qfer,
+					   bool no_taint)
 {
 	ERROR_GUARD(NULL);
 	assert(t);
 	// if this is for a struct/union with volatile field(s), create a global variable instead
 	if (t->is_aggregate() && t->is_volatile_struct_union()) {
-		return GenerateNewGlobal(access, cg_context, t, qfer);
+		return GenerateNewGlobal(access, cg_context, t, qfer, no_taint);
 	}
 	// if there are "goto" in block (and sub-blocks), find the jump source statement,
 	// and make sure the variable we are creating is visible in both this block and jump
@@ -927,7 +935,7 @@ VariableSelector::GenerateNewParentLocal(Block &block,
 	assert(var_qfer.sanity_check(t));
 	string name = RandomLocalName();
 
-	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, blk, name);
+	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, blk, name, no_taint);
 	blk->local_vars.push_back(var);
 	FactMgr* fm = get_fact_mgr(&cg_context);
 	fm->add_new_var_fact_and_update_inout_maps(blk, var->get_collective());
@@ -978,7 +986,8 @@ VariableSelector::SelectParentLocal(Effect::Access access,
                   const Type* type,
 				  const CVQualifiers* qfer,
 				  eMatchType mt,
-				  const vector<const Variable*>& invalid_vars)
+				  const vector<const Variable*>& invalid_vars,
+				  bool no_taint)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN(dtSelectParentLocal, NULL);
 	// Select from the local variables of the parent OR any of its block stack.
@@ -998,14 +1007,14 @@ VariableSelector::SelectParentLocal(Effect::Access access,
 	const Type *t = NULL;
 	if (block->local_vars.empty()) {
 		if (CGOptions::expand_struct()) {
-			Variable *var = VariableSelector::eager_create_local_struct(*block, access, cg_context, type, qfer, mt, invalid_vars);
+			Variable *var = VariableSelector::eager_create_local_struct(*block, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 			ERROR_GUARD(NULL);
 			if (var)
 				return var;
 		}
 		const Type* t = Type::random_type_from_type(type, true, false);
 		ERROR_GUARD(NULL);
-		return GenerateNewParentLocal(*block, access, cg_context, t, qfer);
+		return GenerateNewParentLocal(*block, access, cg_context, t, qfer, no_taint);
 	}
 
 	if (type && type->eType == eSimple && (type->simple_type != eVoid)) {
@@ -1016,18 +1025,18 @@ VariableSelector::SelectParentLocal(Effect::Access access,
 		ERROR_GUARD(NULL);
 	}
 
-	Variable* var = choose_var(block->local_vars, access, cg_context, t, qfer, mt, invalid_vars);
+	Variable* var = choose_var(block->local_vars, access, cg_context, t, qfer, mt, invalid_vars, no_taint);
 	ERROR_GUARD(NULL);
 	if (var == 0) {
 #if 0
 		if (CGOptions::expand_struct()) {
-			var = VariableSelector::eager_create_local_struct(*block, access, cg_context, type, qfer, mt, invalid_vars);
+			var = VariableSelector::eager_create_local_struct(*block, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 			ERROR_GUARD(NULL);
 			if (var)
 				return var;
 		}
 #endif
-		var = GenerateNewParentLocal(*block, access, cg_context, t, qfer);
+		var = GenerateNewParentLocal(*block, access, cg_context, t, qfer, no_taint);
 	}
 	return var;
 }
@@ -1071,14 +1080,15 @@ VariableSelector::SelectParentParam(Effect::Access access,
 				  const Type* type,
 				  const CVQualifiers* qfer,
 				  eMatchType mt,
-				  const vector<const Variable*>& invalid_vars)
+				  const vector<const Variable*>& invalid_vars,
+				  bool no_taint)
 {
 	Function &parent = *cg_context.get_current_func();
 	if (parent.param.empty())
-		return SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars);
-	Variable* var = choose_var(parent.param, access, cg_context, type, qfer, mt, invalid_vars);
+		return SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
+	Variable* var = choose_var(parent.param, access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 	ERROR_GUARD(NULL);
-	return var ? var : SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars);
+	return var ? var : SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 }
 
 // --------------------------------------------------------------
@@ -1086,7 +1096,8 @@ Variable *
 VariableSelector::GenerateNewVariable(Effect::Access access,
 					const CGContext &cg_context,
                     const Type* type,
-					const CVQualifiers* qfer)
+					const CVQualifiers* qfer,
+					bool no_taint)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN(dtGenerateNewVariable, NULL);
 	Variable *var = 0;
@@ -1106,7 +1117,7 @@ VariableSelector::GenerateNewVariable(Effect::Access access,
 		}
 		t = Type::random_type_from_type(type);
 		ERROR_GUARD(NULL);
-		var = GenerateNewGlobal(access, cg_context, t, qfer);
+		var = GenerateNewGlobal(access, cg_context, t, qfer, no_taint);
 		break;
 	case eParentLocal:
 	{
@@ -1123,7 +1134,7 @@ VariableSelector::GenerateNewVariable(Effect::Access access,
 		}
 		t = Type::random_type_from_type(type, true, false);
 		ERROR_GUARD(NULL);
-		var = GenerateNewParentLocal(*(func.stack[index]), access, cg_context, t, qfer);
+		var = GenerateNewParentLocal(*(func.stack[index]), access, cg_context, t, qfer, no_taint);
 		break;
 	}
 	default:
@@ -1141,7 +1152,7 @@ VariableSelector::GenerateNewVariable(Effect::Access access,
   * JYTODO: make pointers control variables?
   ************************************************************/
 Variable *
-VariableSelector::SelectLoopCtrlVar(const CGContext &cg_context, const vector<const Variable*>& invalid_vars)
+VariableSelector::SelectLoopCtrlVar(const CGContext &cg_context, const vector<const Variable*>& invalid_vars, bool no_taint)
 {
 	// Note that many of the functions that select `var' can return null, if
 	const Type* type = get_int_type();
@@ -1161,15 +1172,15 @@ VariableSelector::SelectLoopCtrlVar(const CGContext &cg_context, const vector<co
 			len--;
 		}
 	}
-	Variable* var = choose_var(vars, Effect::WRITE, cg_context, type, 0, eConvert, invalid_vars, true);
+	Variable* var = choose_var(vars, Effect::WRITE, cg_context, type, 0, eConvert, invalid_vars, true, false, no_taint);
 	ERROR_GUARD(NULL);
 	if (var == NULL) {
 		if (CGOptions::global_variables()) {
-			var = GenerateNewGlobal(Effect::WRITE, cg_context, type, 0);
+			var = GenerateNewGlobal(Effect::WRITE, cg_context, type, 0, no_taint);
 		}
 		else {
 			var = GenerateNewParentLocal(*cg_context.get_current_block(),
-					Effect::WRITE, cg_context, type, 0);
+					Effect::WRITE, cg_context, type, 0, no_taint);
 		}
 	}
 	return var;
@@ -1184,7 +1195,7 @@ VariableSelector::select(Effect::Access access,
                const Type* type,
 			   const CVQualifiers* qfer,
 			   const vector<const Variable*>& invalid_vars,
-			   eMatchType mt, eVariableScope scope)
+			   eMatchType mt, bool no_taint, eVariableScope scope)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN_WITH_FLAG(dtSelectVariable, scope, NULL);
 	VariableSelectFilter filter(cg_context);
@@ -1199,20 +1210,20 @@ VariableSelector::select(Effect::Access access,
 	// they cannot find a suitable variable.  So we loop.
 	switch (scope) {
 	case eGlobal:
-		var = SelectGlobal(access, cg_context, type, qfer, mt, invalid_vars);
+		var = SelectGlobal(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 		break;
 	case eParentLocal:
 		// ...a local var from one of its blocks.
-		var = SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars);
+		var = SelectParentLocal(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 		break;
 	case eParentParam:
 		// ...one of the function's parameters.
-		var = SelectParentParam(access, cg_context, type, qfer, mt, invalid_vars);
+		var = SelectParentParam(access, cg_context, type, qfer, mt, invalid_vars, no_taint);
 		break;
 	case eNewValue:
 		// Must decide where to put the new variable (global or parent
 		// local)?
-		var = GenerateNewVariable(access, cg_context, type, qfer);
+		var = GenerateNewVariable(access, cg_context, type, qfer, no_taint);
 		if (CGOptions::expand_struct())
 			Error::set_error(ERROR);
 		break;
@@ -1466,7 +1477,7 @@ VariableSelector::itemize_array(CGContext& cg_context, const ArrayVariable* av)
 }
 
 const Variable*
-VariableSelector::select_must_use_var(Effect::Access access, CGContext &cg_context, const Type* type, const CVQualifiers* qfer)
+VariableSelector::select_must_use_var(Effect::Access access, CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint)
 {
 	if (cg_context.rw_directive == NULL) return NULL;
 
@@ -1480,6 +1491,10 @@ VariableSelector::select_must_use_var(Effect::Access access, CGContext &cg_conte
 				int deref_level = v->type->get_indirect_level() - type->get_indirect_level();
 				// for LHS, make sure the array type is not constant after dereference
 				if (access == Effect::WRITE && v->qfer.is_const_after_deref(deref_level)) {
+					continue;
+				}
+
+				if (no_taint && v->is_tainted()) {
 					continue;
 				}
 

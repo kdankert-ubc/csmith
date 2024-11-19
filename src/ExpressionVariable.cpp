@@ -55,7 +55,7 @@
  *
  */
 ExpressionVariable *
-ExpressionVariable::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool as_param, bool as_return)
+ExpressionVariable::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool as_param, bool as_return, bool no_taint)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN(dtExpressionVariable, NULL);
 	Function *curr_func = cg_context.get_current_func();
@@ -70,9 +70,9 @@ ExpressionVariable::make_random(CGContext &cg_context, const Type* type, const C
 	do {
 		const Variable* var = 0;
 		// try to use one of must_read_vars in CGContext
-		var = VariableSelector::select_must_use_var(Effect::READ, cg_context, type, qfer);
+		var = VariableSelector::select_must_use_var(Effect::READ, cg_context, type, qfer, no_taint);
 		if (var == NULL) {
-			var = VariableSelector::select(Effect::READ, cg_context, type, qfer, dummy, eFlexible);
+			var = VariableSelector::select(Effect::READ, cg_context, type, qfer, dummy, eFlexible, no_taint);
 		}
 		ERROR_GUARD(NULL);
 		if (!var)

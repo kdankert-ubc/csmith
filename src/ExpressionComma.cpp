@@ -56,10 +56,10 @@ cast_if_needed(Expression* exp)
 }
 
 ExpressionComma*
-ExpressionComma::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer)
+ExpressionComma::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint)
 {
 	Expression* lhs = Expression::make_random(cg_context, NULL, NULL, false, true);
-	Expression* rhs = Expression::make_random(cg_context, type, qfer, false, false);
+	Expression* rhs = Expression::make_random(cg_context, type, qfer, false, false, no_taint);
 	// typecast, if needed.
 	if(CGOptions::lang_cpp())
 		cast_if_needed(rhs);

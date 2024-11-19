@@ -49,7 +49,7 @@
  *
  */
 Expression *
-ExpressionAssign::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer)
+ExpressionAssign::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint)
 {
 	CVQualifiers qf;
 	if (qfer == NULL) {

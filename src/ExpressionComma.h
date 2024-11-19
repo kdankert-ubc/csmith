@@ -41,7 +41,7 @@ class ExpressionComma : public Expression
 {
 public:
 	// Factory method.
-	static ExpressionComma *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0);
+	static ExpressionComma *make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer=0, bool no_taint = false);
 
 	virtual ~ExpressionComma(void);
 

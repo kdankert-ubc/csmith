@@ -73,7 +73,7 @@ Lhs::make_random(CGContext &cg_context, const Type* t, const CVQualifiers* qfer,
 		DEPTH_GUARD_BY_TYPE_RETURN(dtLhs, NULL);
 		const Variable* var = 0;
 		// try to use one of the "must_use" variables
-		var = VariableSelector::select_must_use_var(Effect::WRITE, cg_context, t, qfer);
+		var = VariableSelector::select_must_use_var(Effect::WRITE, cg_context, t, qfer, false);
 		if (var == NULL) {
 			bool flag = rnd_flipcoin(SelectDerefPointerProb);
 			if (flag) {
@@ -90,7 +90,7 @@ Lhs::make_random(CGContext &cg_context, const Type* t, const CVQualifiers* qfer,
 			if (!(new_qfer.wildcard)) {
 				new_qfer.restrict(Effect::WRITE, cg_context);
 			}
-			var = VariableSelector::select(Effect::WRITE, cg_context, t, &new_qfer, dummy, eDerefExact);
+			var = VariableSelector::select(Effect::WRITE, cg_context, t, &new_qfer, dummy, eDerefExact, false);
 			ERROR_GUARD(NULL);
 			int deref_level = var->type->get_indirect_level() - t->get_indirect_level();
 			assert(!var->qfer.is_const_after_deref(deref_level));

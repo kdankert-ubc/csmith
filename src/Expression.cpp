@@ -156,7 +156,7 @@ Expression::indented_output(std::ostream &out, int indent) const
  *
  */
 Expression *
-Expression::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_func, bool no_const, enum eTermType tt)
+Expression::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_func, bool no_const, bool no_taint, enum eTermType tt)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN_WITH_FLAG(dtExpression, tt, NULL);
 	Expression *e = 0;
@@ -202,16 +202,16 @@ Expression::make_random(CGContext &cg_context, const Type* type, const CVQualifi
 		e = Constant::make_random(type);
 		break;
 	case eVariable:
-		e = ExpressionVariable::make_random(cg_context, type, qfer);
+		e = ExpressionVariable::make_random(cg_context, type, qfer, no_taint);
 		break;
 	case eFunction:
-		e = ExpressionFuncall::make_random(cg_context, type, qfer);
+		e = ExpressionFuncall::make_random(cg_context, type, qfer, no_taint);
 		break;
 	case eAssignment:
-		e = ExpressionAssign::make_random(cg_context, type, qfer);
+		e = ExpressionAssign::make_random(cg_context, type, qfer, no_taint);
 		break;
 	case eCommaExpr:
-		e = ExpressionComma::make_random(cg_context, type, qfer);
+		e = ExpressionComma::make_random(cg_context, type, qfer, no_taint);
 		break;
 	default: break;
 	}
@@ -252,7 +252,7 @@ Expression::output_cast(std::ostream& out) const
  *
  */
 Expression *
-Expression::make_random_param(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, enum eTermType tt)
+Expression::make_random_param(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint, enum eTermType tt)
 {
 	DEPTH_GUARD_BY_TYPE_RETURN_WITH_FLAG(dtExpressionRandomParam, tt, NULL);
 	Expression *e = 0;
@@ -283,16 +283,16 @@ Expression::make_random_param(CGContext &cg_context, const Type* type, const CVQ
 		e = Constant::make_random(type);
 		break;
 	case eVariable:
-		e = ExpressionVariable::make_random(cg_context, type, qfer, true);
+		e = ExpressionVariable::make_random(cg_context, type, qfer, true, false, no_taint);
 		break;
 	case eFunction:
-		e = ExpressionFuncall::make_random(cg_context, type, qfer);
+		e = ExpressionFuncall::make_random(cg_context, type, qfer, no_taint);
 		break;
 	case eAssignment:
-		e = ExpressionAssign::make_random(cg_context, type, qfer);
+		e = ExpressionAssign::make_random(cg_context, type, qfer, no_taint);
 		break;
 	case eCommaExpr:
-		e = ExpressionComma::make_random(cg_context, type, qfer);
+		e = ExpressionComma::make_random(cg_context, type, qfer, no_taint);
 		break;
 	default: break;
 	}

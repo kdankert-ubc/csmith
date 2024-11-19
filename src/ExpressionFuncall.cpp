@@ -68,7 +68,7 @@ ExpressionFunctionProbability(const CGContext &/*cg_context*/)
  *
  */
 Expression *
-ExpressionFuncall::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer)
+ExpressionFuncall::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qfer, bool no_taint)
 {
 	Expression *e = 0;
 	bool std_func = ExpressionFunctionProbability(cg_context);
