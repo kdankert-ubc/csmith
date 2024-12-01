@@ -713,7 +713,7 @@ Variable::OutputDef(std::ostream &out, int indent) const
 {
 	output_tab(out, indent);
 	// force global variables to be static if necessary
-	if (CGOptions::force_globals_static() && is_global()) {
+	if (is_global() && (CGOptions::force_globals_static() || rnd_flipcoin(pStaticKeywordProb))) {
 		out << "static ";
 	}
 	output_qualified_type(out);

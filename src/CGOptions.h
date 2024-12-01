@@ -237,6 +237,9 @@ public:
 	static bool inline_function(void);
 	static bool inline_function(bool p);
 
+	static bool static_keyword(void);
+	static bool static_keyword(bool p);
+
 	static bool longlong(void);
 	static bool longlong(bool p);
 
@@ -394,6 +397,9 @@ public:
 
 	static int inline_function_prob(void);
 	static int inline_function_prob(int p);
+
+	static int static_keyword_prob(void);
+	static int static_keyword_prob(int p);
 
 	static int builtin_function_prob(void);
 	static int builtin_function_prob(int p);
@@ -553,6 +559,7 @@ private:
 	static bool	no_delta_reduction_;
 	static bool	math64_;
 	static bool	inline_function_;
+	static bool	static_keyword_;
 	static bool	math_notmp_;
 	static bool	longlong_;
 	static bool	int8_;
@@ -602,6 +609,7 @@ private:
 	static bool force_globals_static_;
 	static bool force_non_uniform_array_init_;
 	static int inline_function_prob_;
+	static int static_keyword_prob_;
 	static int builtin_function_prob_;
 	static int array_oob_prob_;
 	static int null_pointer_dereference_prob_;

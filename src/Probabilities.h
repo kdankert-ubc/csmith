@@ -64,6 +64,7 @@ enum ProbName {
 	pNewArrayVariableProb,
 	pAccessOnceVariableProb,
 	pInlineFunctionProb,
+	pStaticKeywordProb,
 	pBuiltinFunctionProb,
     pArrayOOBProb,
 
@@ -229,6 +230,9 @@ enum ProbName {
 
 #define InlineFunctionProb \
 	Probabilities::get_prob(pInlineFunctionProb)
+
+#define StaticFunctionProb \
+	Probabilities::get_prob(pStaticKeywordProb)
 
 #define BuiltinFunctionProb \
 	Probabilities::get_prob(pBuiltinFunctionProb)

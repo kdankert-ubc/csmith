@@ -174,7 +174,9 @@ static void print_help()
 	cout << "  --main | --nomain: enable | disable to generate main function (enabled by default)." << endl <<  endl;
 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
+	cout << "  --static-keyword | --no-static-keyword: enable | disable static attributes on generated keywords." << endl << endl;
 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
+	cout << "  --static-keyword-prob <num>: set the probability of each keyword being marked as static (default is 50)." << endl << endl;
 	cout << "  --array-oob-prob <num>: set the probability for limit of an array accessing loop to be out of bounds (default is 0)." << endl << endl;
 
 	// numbered controls
@@ -757,6 +759,16 @@ main(int argc, char **argv)
 			continue;
 		}
 
+		if (strcmp (argv[i], "--static-keyword") == 0) {
+			CGOptions::static_keyword(true);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--no-static-keyword") == 0) {
+			CGOptions::static_keyword(false);
+			continue;
+		}
+
 		if (strcmp (argv[i], "--longlong") == 0) {
 			CGOptions::longlong(true);
 			continue;
@@ -1269,6 +1281,16 @@ main(int argc, char **argv)
 			if (!parse_int_arg(argv[i], &prob))
 				exit(-1);
 			CGOptions::inline_function_prob(prob);
+			continue;
+		}
+
+		if (strcmp (argv[i], "--static-keyword-prob") == 0 ) {
+			unsigned long prob;
+			i++;
+			arg_check(argc, i);
+			if (!parse_int_arg(argv[i], &prob))
+				exit(-1);
+			CGOptions::static_keyword_prob(prob);
 			continue;
 		}
 

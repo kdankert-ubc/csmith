@@ -414,6 +414,7 @@ Function::Function(const string &name, const Type *return_type)
 	  fact_changed(false),
 	  union_field_read(false),
 	  is_inlined(false),
+	  is_static(false),
 	  is_builtin(false),
 	  visited_cnt(0),
 	  build_state(UNBUILT)
@@ -428,6 +429,7 @@ Function::Function(const string &name, const Type *return_type, bool builtin)
 	  fact_changed(false),
 	  union_field_read(false),
 	  is_inlined(false),
+	  is_static(false),
 	  is_builtin(builtin),
 	  visited_cnt(0),
 	  build_state(UNBUILT)
@@ -493,12 +495,13 @@ Function::make_first(void)
 	FactMgr* fm = new FactMgr(f);
 	FMList.push_back(fm);
 
-	ExtensionMgr::GenerateFirstParameterList(*f);
+	GenerateParameterList(*f);
+	f->is_static = false;
+
+	// ExtensionMgr::GenerateFirstParameterList(*f);
 
 	// No Parameter List
 	f->GenerateBody(CGContext::get_empty_context());
-	if (CGOptions::inline_function() && rnd_flipcoin(InlineFunctionProb))
-		f->is_inlined = true;
 	fm->setup_in_out_maps(true);
 
 	// update global facts to merged facts at all possible function exits
@@ -562,9 +565,8 @@ Function::OutputHeader(std::ostream &out)
 	if (is_inlined)
 		out << "inline ";
 	// force functions to be static if necessary
-	if (CGOptions::force_globals_static()) {
+	if (CGOptions::force_globals_static() || is_static)
 		out << "static ";
-	}
 	rv->qfer.output_qualified_type(return_type, out);
 	out << " " << get_prefixed_name(name) << "(";
 	OutputFormalParamList( out );
