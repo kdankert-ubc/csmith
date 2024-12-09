@@ -143,6 +143,8 @@ message(STATUS "Check for M4 macro processor: found ${M4}")
 
 ###############################################################################
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
 add_subdirectory(doc)
 add_subdirectory(runtime)
 add_subdirectory(scripts)

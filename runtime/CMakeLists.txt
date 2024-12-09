@@ -125,7 +125,7 @@ install(FILES
   )
 foreach(hdr IN LISTS generated_headers)
   install(FILES
-    "${csmith_BINARY_DIR}/${hdr}"
+    "${CMAKE_CURRENT_BINARY_DIR}/${hdr}"
     DESTINATION "${INCLUDE_DIR}"
     )
 endforeach(hdr)
